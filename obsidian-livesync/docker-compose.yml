@@ -31,7 +31,7 @@ services:
       - "traefik.http.routers.couchdb-secure.tls=true"
       - "traefik.http.routers.couchdb-secure.service=couchdb"
       - "traefik.http.services.couchdb.loadbalancer.server.port=5984"
-      - "traefik.http.services.couchdb.loadbalancer.server.scheme=https"
+      - "traefik.http.services.couchdb.loadbalancer.server.scheme=http"
       # --- TCP Routers for api access ---
       - "traefik.tcp.routers.couchdb-raw.entrypoints=couchdb"
       - "traefik.tcp.routers.couchdb-raw.rule=HostSNI(`*`)"
