@@ -1,0 +1,37 @@
+networks:
+  backend:
+    external: true
+
+services:
+  couchdb:
+    image: couchdb:3.5.2.1
+    networks:
+      - backend
+    env_file:
+      - path: stack.env
+        required: false
+      - path: .env
+        required: false
+    environment:
+      - COUCHDB_USER=${DB_USER}
+      - COUCHDB_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ${DB_DATA_PATH:-./couchdb-data}:/opt/couchdb/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      # --- Standard HTTP routers ---
+      - "traefik.http.routers.couchdb.entrypoints=http"
+      - "traefik.http.routers.couchdb.rule=Host(`livesync.contabo.ratsnest.dev`)"
+      - "traefik.http.middlewares.couchdb-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.couchdb.middlewares=couchdb-https-redirect"
+      - "traefik.http.routers.couchdb-secure.entrypoints=https"
+      - "traefik.http.routers.couchdb-secure.rule=Host(`livesync.contabo.ratsnest.dev`)"
+      - "traefik.http.routers.couchdb-secure.tls=true"
+      - "traefik.http.routers.couchdb-secure.service=couchdb"
+      - "traefik.http.services.couchdb.loadbalancer.server.port=5984"
+      - "traefik.http.services.couchdb.loadbalancer.server.scheme=https"
+      # --- TCP Routers for api access ---
+      - "traefik.tcp.routers.couchdb-raw.entrypoints=couchdb"
+      - "traefik.tcp.routers.couchdb-raw.rule=HostSNI(`*`)"
+      - "traefik.tcp.services.couchdb-raw.loadbalancer.server.port=5984"
