@@ -20,6 +20,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=backend"
+      - "io.traefik.instance=internal"
       # --- Standard HTTP routers ---
       - "traefik.http.routers.couchdb.entrypoints=http"
       - "traefik.http.routers.couchdb.rule=Host(`livesync.contabo.ratsnest.dev`)"
