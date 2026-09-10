@@ -17,6 +17,7 @@ services:
       - COUCHDB_PASSWORD=${DB_PASSWORD}
     volumes:
       - ${DB_DATA_PATH:-./couchdb-data}:/opt/couchdb/data
+      - ${DB_CONF_PATH:-./couchdb-conf}:/opt/couchdb/etc/local.d
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=backend"
