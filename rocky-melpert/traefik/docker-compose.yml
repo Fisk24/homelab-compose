@@ -1,0 +1,48 @@
+networks:
+  proxy:
+    external: true
+
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    env_file:
+      - /opt/traefik/.env
+    security_opt:
+      - no-new-privileges:true
+    networks:
+        proxy:
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - DOCKER_API_VERSION=1.44
+      - CF_API_EMAIL=${CF_API_EMAIL}
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/traefik/traefik.yaml:/traefik.yaml:ro
+      - /opt/traefik/acme.json:/acme.json
+      - /opt/traefik/config.yaml:/config.yaml
+      - /opt/traefik/logs:/var/log/traefik
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.traefik-auth.basicauth.users=${AUTH_SALT}"
+      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+      #- "traefik.http.middlewares.test-ipallowlist.ipallowlist.sourcerange=127.0.0.1/32, 154.53.46.144"
+      #- "traefik.http.middlewares.test-ipallowlist.ipallowlist.ipStrategy.depth=1"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      - "traefik.http.routers.traefik-secure.entrypoints=https"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
+      #- "traefik.http.routers.traefik-secure.middlewares=ip-whitelist@file, traefik-auth"
+      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.tls=true"
+      - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=rocky-melpert.ratsnest.dev"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.rocky-melpert.ratsnest.dev"
+      - "traefik.http.routers.traefik-secure.service=api@internal"

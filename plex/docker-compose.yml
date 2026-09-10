@@ -1,0 +1,44 @@
+networks:
+  proxy:
+    external: true
+
+services:
+  plex:
+    image: lscr.io/linuxserver/plex:latest
+    container_name: plex
+    restart: unless-stopped
+    networks:
+      - proxy
+    
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - VERSION=docker
+      - PLEX_CLAIM=${PLEX_CLAIM} #optional
+      
+    volumes:
+      - /opt/plex/config:/config
+      - /mnt/media1/Videos/Shows:/tv
+      - /mnt/media2/Videos/Shows:/tv2
+      - /mnt/media1/Videos/Movies:/movies
+      - /mnt/media2/Videos/Movies:/movies2
+      - /mnt/media1/Music:/music
+
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "io.traefik.instance=frontend"
+      - "traefik.http.routers.plex.entrypoints=http"
+      - "traefik.http.routers.plex.rule=Host(`plex.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.plex-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.plex.middlewares=plex-https-redirect"
+      - "traefik.http.routers.plex-secure.entrypoints=https"
+      - "traefik.http.routers.plex-secure.rule=Host(`plex.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.plex-secure.tls=true"
+      - "traefik.http.routers.plex-secure.service=plex"
+      - "traefik.http.services.plex.loadbalancer.server.port=32400"
+      - "traefik.http.services.plex.loadbalancer.server.scheme=http"
