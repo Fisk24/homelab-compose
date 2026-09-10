@@ -29,20 +29,23 @@ services:
       - /opt/traefik/logs:/var/log/traefik
     labels:
       - "traefik.enable=true"
+      # -- Instance Constraints --
+      - "traefik.docker.network=proxy"
+      - "io.traefik.instance=frontend"
+      # -- Setup Traefik Dashboard Routing --
+      # --- HTTP Routing + Redirect to HTTPS ---
       - "traefik.http.routers.traefik.entrypoints=http"
       - "traefik.http.routers.traefik.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
-      - "traefik.http.middlewares.traefik-auth.basicauth.users=${AUTH_SALT}"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
-      #- "traefik.http.middlewares.test-ipallowlist.ipallowlist.sourcerange=127.0.0.1/32, 154.53.46.144"
-      #- "traefik.http.middlewares.test-ipallowlist.ipallowlist.ipStrategy.depth=1"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+      # --- HTTPS Routing ---
       - "traefik.http.routers.traefik-secure.entrypoints=https"
       - "traefik.http.routers.traefik-secure.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
-      #- "traefik.http.routers.traefik-secure.middlewares=ip-whitelist@file, traefik-auth"
-      - "traefik.http.routers.traefik-secure.middlewares=traefik-auth"
+      - "traefik.http.routers.traefik-secure.service=api@internal"
+      # --- Wildcard Certs ---
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik-secure.tls.domains[0].main=rocky-melpert.ratsnest.dev"
       - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.rocky-melpert.ratsnest.dev"
-      - "traefik.http.routers.traefik-secure.service=api@internal"
+
