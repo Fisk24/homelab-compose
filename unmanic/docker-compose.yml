@@ -7,7 +7,7 @@
 #
 
 networks:
-  backend:
+  proxy:
     external: true
 
 services:
@@ -15,7 +15,7 @@ services:
     container_name: unmanic
     image: josh5/unmanic:latest
     networks:
-      - backend
+      - proxy
     environment:
       - PUID=1000
       - PGID=1000
