@@ -1,0 +1,34 @@
+networks:
+  proxy:
+    external: true
+
+services:
+  nostalgiatv:
+    image: purestream711/nostalgiatv-server:latest
+    container_name: nostalgiatv-server
+    networks:
+      - proxy
+    volumes:
+      - /opt/nostalgiatv/data:/app/data
+      - /opt/nostalgiatv/config:/app/config
+      - /opt/nostalgiatv/logos:/app/logos
+    environment:
+      - TZ=America/New_York
+      # Run as your host user so the bind-mounted folders above stay writable
+      # (find yours with `id -u` / `id -g`). See "Volumes & permissions" below.
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.nostalgiatv.entrypoints=http"
+      - "traefik.http.routers.nostalgiatv.rule=Host(`tv.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.nostalgiatv-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.nostalgiatv.middlewares=nostalgiatv-https-redirect"
+      - "traefik.http.routers.nostalgiatv-secure.entrypoints=https"
+      - "traefik.http.routers.nostalgiatv-secure.rule=Host(`tv.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.nostalgiatv-secure.tls=true"
+      - "traefik.http.routers.nostalgiatv-secure.service=nostalgiatv"
+      - "traefik.http.services.nostalgiatv.loadbalancer.server.port=19850"
+      - "traefik.http.services.nostalgiatv.loadbalancer.server.scheme=http"
