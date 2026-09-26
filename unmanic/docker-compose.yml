@@ -6,20 +6,32 @@
 #     <PATH_TO_ENCODE_CACHE>            -  Cache path for in-progress encoding tasks
 #
 
----
-version: "2.4"
+networks:
+  backend:
+    external: true
+
 services:
   unmanic:
     container_name: unmanic
     image: josh5/unmanic:latest
-    ports:
-      - 8888:8888
+    networks:
+      - backend
     environment:
-      - PUID=<PUID>
-      - PGID=<PGID>
+      - PUID=1000
+      - PGID=1000
     volumes:
-      - <PATH_TO_CONFIG>:/config
-      - <PATH_TO_LIBRARY>:/library
-      - <PATH_TO_ENCODE_CACHE>:/tmp/unmanic
+      - /opt/unmanic/config:/config
+      - /mnt/media1:/media1
+      - /mnt/media2:/media2
+      - /tmp/unmanic:/tmp/unmanic
     devices:
       - /dev/dri:/dev/dri # For H/W transcoding using the VAAPI encoder
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=internal"
+      - "traefik.http.routers.unmanic-secure.entrypoints=https"
+      - "traefik.http.routers.unmanic-secure.rule=Host(`unmanic.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.unmanic-secure.tls=true"
+      - "traefik.http.services.unmanic-secure.loadbalancer.server.port=8888"
+      - "traefik.http.services.unmanic-secure.loadbalancer.server.scheme=http"
