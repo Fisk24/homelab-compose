@@ -1,5 +1,5 @@
 networks:
-  proxy:
+  backend:
     external: true
 
 services:
@@ -15,7 +15,7 @@ services:
     volumes:
       - /opt/arr/gluetun:/gluetun
     networks:
-      - proxy
+      - backend
     environment:
       # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
       - VPN_SERVICE_PROVIDER=protonvpn
@@ -39,7 +39,8 @@ services:
     labels:
       # HOMEPAGE
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
+      - "io.traefik.instance=private"
+      - "traefik.docker.network=backend"
       - "traefik.http.routers.homepage-arr.entrypoints=http"
       - "traefik.http.routers.homepage-arr.rule=Host(`content.big-melpert.ratsnest.dev`)"
       - "traefik.http.middlewares.homepage-arr-https-redirect.redirectscheme.scheme=https"
