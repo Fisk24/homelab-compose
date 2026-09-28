@@ -6,8 +6,8 @@ services:
   gluetun:
     image: qmcgaw/gluetun
     restart: unless-stopped
-    env_file:
-      - stack.env # should default to .env
+    #env_file:
+    #  - stack.env # should default to .env
     cap_add:
       - NET_ADMIN
     devices:
