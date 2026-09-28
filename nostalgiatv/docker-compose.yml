@@ -1,5 +1,5 @@
 networks:
-  proxy:
+  backend:
     external: true
 
 services:
@@ -7,7 +7,7 @@ services:
     image: purestream711/nostalgiatv-server:latest
     container_name: nostalgiatv-server
     networks:
-      - proxy
+      - backend
     volumes:
       - /opt/nostalgiatv/data:/app/data
       - /opt/nostalgiatv/config:/app/config
@@ -20,15 +20,12 @@ services:
       - PGID=1000
     restart: unless-stopped
     labels:
+      labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=proxy"
-      - "traefik.http.routers.nostalgiatv.entrypoints=http"
-      - "traefik.http.routers.nostalgiatv.rule=Host(`tv.rocky-melpert.ratsnest.dev`)"
-      - "traefik.http.middlewares.nostalgiatv-https-redirect.redirectscheme.scheme=https"
-      - "traefik.http.routers.nostalgiatv.middlewares=nostalgiatv-https-redirect"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=private"
       - "traefik.http.routers.nostalgiatv-secure.entrypoints=https"
-      - "traefik.http.routers.nostalgiatv-secure.rule=Host(`tv.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.nostalgiatv-secure.rule=Host(`tv.big-melpert.ratsnest.dev`)"
       - "traefik.http.routers.nostalgiatv-secure.tls=true"
-      - "traefik.http.routers.nostalgiatv-secure.service=nostalgiatv"
-      - "traefik.http.services.nostalgiatv.loadbalancer.server.port=19850"
-      - "traefik.http.services.nostalgiatv.loadbalancer.server.scheme=http"
+      - "traefik.http.services.nostalgiatv-secure.loadbalancer.server.port=19850"
+      - "traefik.http.services.nostalgiatv-secure.loadbalancer.server.scheme=http"
