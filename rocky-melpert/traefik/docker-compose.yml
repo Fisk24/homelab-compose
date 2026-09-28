@@ -1,5 +1,5 @@
 networks:
-  proxy:
+  backend:
     external: true
 
 services:
@@ -12,7 +12,7 @@ services:
     security_opt:
       - no-new-privileges:true
     networks:
-        proxy:
+      - backend
     ports:
       - "80:80"
       - "443:443"
@@ -30,8 +30,8 @@ services:
     labels:
       - "traefik.enable=true"
       # -- Instance Constraints --
-      - "traefik.docker.network=proxy"
-      - "io.traefik.instance=frontend"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=private"
       # -- Setup Traefik Dashboard Routing --
       # --- HTTP Routing + Redirect to HTTPS ---
       - "traefik.http.routers.traefik.entrypoints=http"
