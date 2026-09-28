@@ -35,17 +35,17 @@ services:
       # -- Setup Traefik Dashboard Routing --
       # --- HTTP Routing + Redirect to HTTPS ---
       - "traefik.http.routers.traefik.entrypoints=http"
-      - "traefik.http.routers.traefik.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.big-melpert.ratsnest.dev`)"
       - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
       - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto=https"
       - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
       # --- HTTPS Routing ---
       - "traefik.http.routers.traefik-secure.entrypoints=https"
-      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.traefik-secure.rule=Host(`traefik.big-melpert.ratsnest.dev`)"
       - "traefik.http.routers.traefik-secure.service=api@internal"
       # --- Wildcard Certs ---
       - "traefik.http.routers.traefik-secure.tls=true"
       - "traefik.http.routers.traefik-secure.tls.certresolver=cloudflare"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].main=rocky-melpert.ratsnest.dev"
-      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.rocky-melpert.ratsnest.dev"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].main=big-melpert.ratsnest.dev"
+      - "traefik.http.routers.traefik-secure.tls.domains[0].sans=*.big-melpert.ratsnest.dev"
 
