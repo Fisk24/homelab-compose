@@ -1,0 +1,31 @@
+networks:
+  backend:
+    external: true
+
+volumes:
+  portainer_data:
+
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    security_opt:
+        - no-new-privileges:true
+    networks:
+        - backend
+    environment:
+        - VIRTUAL_HOST=portainer.big-melpert.ratsnest.dev
+        - VIRTUAL_PORT=9000
+    volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+        - portainer_data:/data
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=private"
+      - "traefik.http.routers.portainer-secure.entrypoints=https"
+      - "traefik.http.routers.portainer-secure.rule=Host(`portainer.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.portainer-secure.tls=true"
+      - "traefik.http.services.portainer-secure.loadbalancer.server.port=9443"
+      - "traefik.http.services.portainer-secure.loadbalancer.server.scheme=https"
