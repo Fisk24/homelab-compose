@@ -1,0 +1,241 @@
+networks:
+  proxy:
+    external: true
+
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    restart: unless-stopped
+    env_file:
+      - stack.env # should default to .env
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - /opt/arr/gluetun:/gluetun
+    networks:
+      - proxy
+    environment:
+      # See https://github.com/qdm12/gluetun-wiki/tree/main/setup#setup
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      # Wireguard:
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_TOKEN}
+      - WIREGUARD_ADDRESSES=10.2.0.2/32
+      - SERVER_COUNTRIES=United States
+      # Timezone for accurate log times
+      - TZ=America/Chicago
+      # Server list updater
+      # See https://github.com/qdm12/gluetun-wiki/blob/main/setup/servers.md#update-the-vpn-servers-list
+      - UPDATER_PERIOD=24h
+      # Port forwarding
+      # enable port forwarding
+      - VPN_PORT_FORWARDING=on
+      # only connect to proton servers which support port forwarding
+      - PORT_FORWARD_ONLY=on
+      - VPN_PORT_FORWARDING_UP_COMMAND=/bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":{{PORT}},\"current_network_interface\":\"{{VPN_INTERFACE}}\",\"random_port\":false,\"upnp\":false}" http://127.0.0.1:8085/api/v2/app/setPreferences' 
+      #- VPN_PORT_FORWARDING_DOWN_COMMAND=/bin/sh -c 'wget -O- -nv --retry-connrefused --post-data "json={\"listen_port\":0,\"current_network_interface\":\"lo\"}" http://127.0.0.1:8085/api/v2/app/setPreferences'
+    labels:
+      # HOMEPAGE
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.homepage-arr.entrypoints=http"
+      - "traefik.http.routers.homepage-arr.rule=Host(`content.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.homepage-arr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.homepage-arr.middlewares=homepage-arr-https-redirect"
+      - "traefik.http.routers.homepage-arr-secure.entrypoints=https"
+      - "traefik.http.routers.homepage-arr-secure.rule=Host(`content.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.homepage-arr-secure.tls=true"
+      - "traefik.http.routers.homepage-arr-secure.service=homepage-arr"
+      - "traefik.http.services.homepage-arr.loadbalancer.server.port=3000"
+      - "traefik.http.services.homepage-arr.loadbalancer.server.scheme=http"
+
+      # NZBGET
+      - "traefik.http.routers.nzbget.entrypoints=http"
+      - "traefik.http.routers.nzbget.rule=Host(`nzbget.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.nzbget-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.nzbget.middlewares=nzbget-https-redirect"
+      - "traefik.http.routers.nzbget-secure.entrypoints=https"
+      - "traefik.http.routers.nzbget-secure.rule=Host(`nzbget.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.nzbget-secure.tls=true"
+      - "traefik.http.routers.nzbget-secure.service=nzbget"
+      - "traefik.http.services.nzbget.loadbalancer.server.port=6789"
+      - "traefik.http.services.nzbget.loadbalancer.server.scheme=http"
+
+      # QBITTORRENT
+      - "traefik.http.routers.qbittorrent.entrypoints=http"
+      - "traefik.http.routers.qbittorrent.rule=Host(`qbittorrent.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.qbittorrent-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.qbittorrent.middlewares=qbittorrent-https-redirect"
+      - "traefik.http.routers.qbittorrent-secure.entrypoints=https"
+      - "traefik.http.routers.qbittorrent-secure.rule=Host(`qbittorrent.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.qbittorrent-secure.tls=true"
+      - "traefik.http.routers.qbittorrent-secure.service=qbittorrent"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.port=8085"
+      - "traefik.http.services.qbittorrent.loadbalancer.server.scheme=http"
+
+      # SONARR
+      - "traefik.http.routers.sonarr.entrypoints=http"
+      - "traefik.http.routers.sonarr.rule=Host(`sonarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.sonarr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.sonarr.middlewares=sonarr-https-redirect"
+      - "traefik.http.routers.sonarr-secure.entrypoints=https"
+      - "traefik.http.routers.sonarr-secure.rule=Host(`sonarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.sonarr-secure.tls=true"
+      - "traefik.http.routers.sonarr-secure.service=sonarr"
+      - "traefik.http.services.sonarr.loadbalancer.server.port=8989"
+      - "traefik.http.services.sonarr.loadbalancer.server.scheme=http"
+
+      # RADARR
+      - "traefik.http.routers.radarr.entrypoints=http"
+      - "traefik.http.routers.radarr.rule=Host(`radarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.radarr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.radarr.middlewares=radarr-https-redirect"
+      - "traefik.http.routers.radarr-secure.entrypoints=https"
+      - "traefik.http.routers.radarr-secure.rule=Host(`radarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.radarr-secure.tls=true"
+      - "traefik.http.routers.radarr-secure.service=radarr"
+      - "traefik.http.services.radarr.loadbalancer.server.port=7878"
+      - "traefik.http.services.radarr.loadbalancer.server.scheme=http"
+
+      # LIDARR
+      - "traefik.http.routers.lidarr.entrypoints=http"
+      - "traefik.http.routers.lidarr.rule=Host(`lidarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.lidarr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.lidarr.middlewares=lidarr-https-redirect"
+      - "traefik.http.routers.lidarr-secure.entrypoints=https"
+      - "traefik.http.routers.lidarr-secure.rule=Host(`lidarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.lidarr-secure.tls=true"
+      - "traefik.http.routers.lidarr-secure.service=lidarr"
+      - "traefik.http.services.lidarr.loadbalancer.server.port=8686"
+      - "traefik.http.services.lidarr.loadbalancer.server.scheme=http"
+
+      # PROWLARR
+      - "traefik.http.routers.prowlarr.entrypoints=http"
+      - "traefik.http.routers.prowlarr.rule=Host(`prowlarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.middlewares.prowlarr-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.prowlarr.middlewares=prowlarr-https-redirect"
+      - "traefik.http.routers.prowlarr-secure.entrypoints=https"
+      - "traefik.http.routers.prowlarr-secure.rule=Host(`prowlarr.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.prowlarr-secure.tls=true"
+      - "traefik.http.routers.prowlarr-secure.service=prowlarr"
+      - "traefik.http.services.prowlarr.loadbalancer.server.port=9696"
+      - "traefik.http.services.prowlarr.loadbalancer.server.scheme=http"
+
+  nzbget:
+    image: lscr.io/linuxserver/nzbget:latest
+    container_name: nzbget
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - NZBGET_USER=nzbget #optional
+      - NZBGET_PASS=tegbzn6789 #optional
+    volumes:
+      - /opt/arr/nzbget:/config
+      - /mnt/media1/Downloads:/downloads #optional
+    #ports:
+    #  - 6789:6789
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago
+      - WEBUI_PORT=8085
+    volumes:
+      - /opt/arr/qbittorrent:/config
+      - /mnt/media1/Downloads:/downloads
+    depends_on:
+      gluetun:
+        condition: service_healthy
+        restart: true
+    restart: always
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/arr/sonarr/data:/config
+      - /mnt/media1/Videos/Shows:/tv 
+      - /mnt/media1/Downloads:/downloads
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/arr/radarr/data:/config
+      - /mnt/media1/Videos/Movies:/movies
+      - /mnt/media1/Downloads:/downloads
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr:latest
+    container_name: lidarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/arr/lidarr/data:/config
+      - /mnt/media1/Music:/music
+      - /mnt/media1/Downloads:/downloads
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes:
+      - /opt/arr/prowlarr/data:/config
+    restart: unless-stopped
+
+  flaresolverr:
+    # DockerHub mirror flaresolverr/flaresolverr:latest
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    network_mode: "service:gluetun"
+    environment:
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FILE=${LOG_FILE:-none}
+      - LOG_HTML=${LOG_HTML:-false}
+      - CAPTCHA_SOLVER=${CAPTCHA_SOLVER:-none}
+      - TZ=America/Chicago
+    volumes:
+      - /opt/arr/flaresolver:/config
+    restart: unless-stopped
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    network_mode: "service:gluetun"
+    environment:
+      PUID: 1000 # optional, your user id
+      PGID: 1000 # optional, your group id
+      HOMEPAGE_ALLOWED_HOSTS: content.big-melpert.ratsnest.dev
+    volumes:
+      - /opt/arr/homepage:/app/config # Make sure your local config directory exists
+      - /var/run/docker.sock:/var/run/docker.sock:ro # optional, for docker integrations
+    restart: unless-stopped
