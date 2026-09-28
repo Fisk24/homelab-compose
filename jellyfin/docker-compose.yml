@@ -9,7 +9,8 @@ services:
     # Optional - specify the uid and gid you would like Jellyfin to use instead of root
     user: 1000:1000
     group_add:
-      - '105'
+      - '105' # render group id
+      - '39'  # video group id
     #ports:
     #  - 8096:8096/tcp
     #  - 7359:7359/udp
