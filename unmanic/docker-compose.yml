@@ -7,7 +7,7 @@
 #
 
 networks:
-  proxy:
+  backend:
     external: true
 
 services:
@@ -15,7 +15,7 @@ services:
     container_name: unmanic
     image: josh5/unmanic:latest
     networks:
-      - proxy
+      - backend
     environment:
       - PUID=1000
       - PGID=1000
@@ -29,9 +29,9 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=backend"
-      - "io.traefik.instance=internal"
+      - "io.traefik.instance=private"
       - "traefik.http.routers.unmanic-secure.entrypoints=https"
-      - "traefik.http.routers.unmanic-secure.rule=Host(`unmanic.rocky-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.unmanic-secure.rule=Host(`unmanic.big-melpert.ratsnest.dev`)"
       - "traefik.http.routers.unmanic-secure.tls=true"
       - "traefik.http.services.unmanic-secure.loadbalancer.server.port=8888"
       - "traefik.http.services.unmanic-secure.loadbalancer.server.scheme=http"
