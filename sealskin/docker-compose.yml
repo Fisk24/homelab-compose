@@ -10,7 +10,7 @@ services:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-      - HOST_URL=desktop.big_melpert.ratsnest.dev #optional
+      - HOST_URL=desktop.big-melpert.ratsnest.dev #optional
     networks:
       - backend
     volumes:
