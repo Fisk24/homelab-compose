@@ -1,0 +1,29 @@
+networks:
+  backend:
+    external: true
+
+services:
+  sealskin:
+    image: lscr.io/linuxserver/sealskin:latest
+    container_name: sealskin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - HOST_URL=desktop.big_melpert.ratsnest.dev #optional
+    networks:
+      - backend
+    volumes:
+      - /opt/sealskin/config:/config
+      - /opt/sealskin/storage:/storage
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=private"
+      - "traefik.http.routers.sealskin-secure.entrypoints=https"
+      - "traefik.http.routers.sealskin-secure.rule=Host(`desktop.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.sealskin-secure.tls=true"
+      - "traefik.http.services.sealskin.loadbalancer.server.port=8443"
+      - "traefik.http.services.sealskin.loadbalancer.server.scheme=https"
+    restart: unless-stopped
