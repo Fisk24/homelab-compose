@@ -14,8 +14,8 @@ services:
     networks:
       - backend
     ports:
-      - "100.64.0.7:80:80"
-      - "100.64.0.7:443:443"
+      - "80:80"
+      - "443:443"
     environment:
       - DOCKER_API_VERSION=1.44
       - CF_API_EMAIL=${CF_API_EMAIL}
