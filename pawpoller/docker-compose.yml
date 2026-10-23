@@ -14,7 +14,7 @@ services:
     #  - "8420:8420"
     networks:
       - backend
-    environemnt:
+    environment:
       - PAWPOLLER_ALLOW_OPEN_SETUP=1 
     volumes:
       - pawpoller-data:/app/data
