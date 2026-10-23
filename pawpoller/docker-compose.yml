@@ -18,7 +18,11 @@ services:
     logging:
       driver: json-file
       options: { max-size: "10m", max-file: "3" }
-    env_file: .env
+    env_file:
+      - path: .env
+        required: false
+      - path: stack.env
+        required: false
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=backend"
