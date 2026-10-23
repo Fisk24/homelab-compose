@@ -1,0 +1,30 @@
+networks:
+  backend:
+    external: true
+
+services:
+  pawpoller:
+    image: ghcr.io/knaughtykat01-prog/pawpoller:latest
+    #ports:
+    #  - "8420:8420"
+    networks:
+      - backend
+    volumes:
+      - /opt/pawpoller/data:/app/data
+      - /opt/pawpoller/logs:/app/logs
+      - /opt/pawpoller/story-archive:/app/story-archive
+    restart: unless-stopped
+    # Docker keeps a container's output until the container is replaced; cap it.
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+    env_file: .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=backend"
+      - "io.traefik.instance=private"
+      - "traefik.http.routers.pawpoller-secure.entrypoints=https"
+      - "traefik.http.routers.pawpoller-secure.rule=Host(`pawpoller.big-melpert.ratsnest.dev`)"
+      - "traefik.http.routers.pawpoller-secure.tls=true"
+      - "traefik.http.services.pawpoller.loadbalancer.server.port=8420"
+      - "traefik.http.services.pawpoller.loadbalancer.server.scheme=http"
