@@ -2,6 +2,11 @@ networks:
   backend:
     external: true
 
+volumes:
+  pawpoller-data:
+  pawpoller-logs:
+  pawpoller-story-archive:
+
 services:
   pawpoller:
     image: ghcr.io/knaughtykat01-prog/pawpoller:latest
@@ -10,9 +15,9 @@ services:
     networks:
       - backend
     volumes:
-      - /opt/pawpoller/data:/app/data
-      - /opt/pawpoller/logs:/app/logs
-      - /opt/pawpoller/story-archive:/app/story-archive
+      - pawpoller-data:/app/data
+      - pawpoller-logs:/app/logs
+      - pawpoller-story-archive:/app/story-archive
     restart: unless-stopped
     # Docker keeps a container's output until the container is replaced; cap it.
     logging:
